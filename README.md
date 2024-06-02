@@ -17,7 +17,7 @@ graph TD;
     machine-learning-->Feature-Engineering;
     machine-learning-->Evaluation-Metrics;
     machine-learning-->Deployment;
-   ```
+```
 
 ## 3、🎨CodeStructure
 
@@ -25,7 +25,11 @@ graph TD;
 
 ├── README.md
 ├── pytorch
-├────── network classification_code                   # 全连接神经网络分类
+├────── network classification_code                  
+├── Pytorch_Lightning_Compare_code
+├────── Lightning_MNIST.py    
+├────── Torch_MNIST.ipynb
+
 
 ```
 
