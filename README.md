@@ -29,6 +29,7 @@ graph TD;
 ├── Pytorch_Lightning_Compare_code
 ├────── Lightning_MNIST.py    
 ├────── Torch_MNIST.ipynb
+├── RNN.ipynb
 
 
 ```
