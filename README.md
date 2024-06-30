@@ -26,6 +26,7 @@ graph TD;
 ├── README.md
 ├── pytorch
 ├────── cifar_code   
+├────── tensor
 ├────── network classification_code             
 ├────── Pytorch_Lightning_Compare_code
 ├──────────── Lightning_MNIST.py    
