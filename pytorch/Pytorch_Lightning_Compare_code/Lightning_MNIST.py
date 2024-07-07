@@ -10,6 +10,7 @@ import lightning.pytorch as pl
 
 
 # 2. 定义编码器和解码器
+
 # 2.1 定义基础编码器Encoder
 class Encoder(nn.Module):
     def __init__(self):
