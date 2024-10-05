@@ -687,6 +687,134 @@ Input (x)  → [ Encoder ] → Latent Space (z) → [ Decoder ] → Reconstructe
 
 自编码器是一类强大的无监督学习模型，能够通过压缩和重建数据来提取有意义的特征，并在降维、特征学习、去噪、生成数据等任务中得到了广泛应用。自编码器的不同变体可以应对不同的任务需求，如卷积自编码器用于图像处理，去噪自编码器用于去噪，变分自编码器则具备生成新样本的能力。尽管自编码器有其局限性，但它为无监督学习和生成模型提供了强有力的工具。
 
+
+
+在机器学习中，**logits** 是指在分类模型（特别是神经网络和逻辑回归模型）的输出层中，未经过激活函数（如 sigmoid 或 softmax 函数）处理的**未归一化分数**或**原始预测值**。logits 是模型对各个类别的直接预测，通常是线性变换的结果，在经过激活函数之前，它们还不是有效的概率值。
+
+**Logits 的定义**
+
+logits 是指模型最后一层的线性输出。例如，在神经网络的分类模型中，最后一层通常是一个全连接层，其输出为 logits。假设模型的最后一层线性输出为 \( z \)，则：
+
+
+$z = w^T x + b $
+
+其中：
+- \( w \) 是权重向量，
+- \( x \) 是输入特征向量，
+- \( b \) 是偏置项。
+
+这些 \( z \) 值就是 logits，通常表示每个类别的**得分**或**置信度**，但它们并不直接代表概率。
+
+
+
+**Logits 与激活函数**
+
+logits 是模型最后一层的输出值，之后需要经过激活函数转换为概率。常用的激活函数有：
+- **Sigmoid 函数**：用于二分类问题，将 logit 转化为一个介于 0 和 1 之间的概率。
+  
+  $
+  \sigma(z) = \frac{1}{1 + e^{-z}}
+  $
+  
+  这里 \( z \) 是 logit 值，\(\sigma(z)\) 就是模型对正类的预测概率。
+
+- **Softmax 函数**：用于多分类问题，将 logits 转换为各类别的概率分布。
+
+  $
+  P(y=i | x) = \frac{e^{z_i}}{\sum_{j} e^{z_j}}
+  $
+
+  其中，\( z_i \) 是类别 \( i \) 的 logit 值，softmax 函数会将所有类别的 logits 转换为概率，且所有类别的概率之和为 1。
+
+
+
+**Logits 在分类模型中的作用**
+
+在分类问题中，模型通过 logits 来进行预测。以下是 logits 在不同类型的分类问题中的作用：
+
+3.1 **二分类问题**
+
+在二分类任务中，模型通常输出一个 logit 值 \( z \)，表示正类的预测分数。这个 logit 经过 sigmoid 函数后，转换为介于 0 和 1 之间的概率，代表正类的发生概率。通常会设置一个阈值（如 0.5），来将该概率转化为最终的分类标签：
+
+$
+P(y = 1 | x) = \frac{1}{1 + e^{-z}}
+$
+
+3.2 **多分类问题**
+
+对于多分类问题，模型输出一组 logits，每个类别一个 logit 值。这些 logits 经过 softmax 函数处理后，转化为类别的概率分布，表示模型对每个类别的预测概率：
+
+$
+P(y = i | x) = \frac{e^{z_i}}{\sum_{j} e^{z_j}}
+$
+
+通过选择概率最大的类别，模型可以给出最终的预测结果。
+
+4. **Logits 与损失函数**
+
+logits 在计算损失函数时也扮演着重要角色。常见的损失函数与 logits 的关系如下：
+
+
+
+4.1 **交叉熵损失（Cross-Entropy Loss）**
+
+交叉熵损失是分类问题中的常用损失函数，尤其适用于与 sigmoid 或 softmax 激活函数配合使用。它衡量模型预测的概率分布与真实分布之间的差异。
+
+- **二分类交叉熵损失**：用于二分类问题，结合 sigmoid 函数计算。
+
+  $
+  \text{Loss} = - \left( y \log(\sigma(z)) + (1 - y) \log(1 - \sigma(z)) \right)
+  $
+
+  其中，\( z \) 是 logit 值，\( \sigma(z) \) 是通过 sigmoid 函数转换后的概率。
+
+- **多分类交叉熵损失**：用于多分类问题，结合 softmax 函数计算。
+
+  $
+  \text{Loss} = - \sum_{i=1}^{C} y_i \log(P(y=i | x))
+  $
+
+  其中，\( y_i \) 是真实标签的 one-hot 编码，\( P(y=i | x) \) 是通过 softmax 函数转换后的类别概率。
+
+
+
+4.2 **损失函数与 logits 的直接计算**
+
+在计算交叉熵损失时，有时可以直接使用 logits，而不需要先通过 softmax 或 sigmoid 转换概率。这种方法称为 **logits 版本的交叉熵损失**，它在数值稳定性和计算效率上更有优势。比如，在 PyTorch 和 TensorFlow 等深度学习框架中，常用的损失函数有 `BCEWithLogitsLoss`（用于二分类）和 `CrossEntropyLoss`（用于多分类），这些函数直接接受 logits 作为输入，并在内部自动应用 sigmoid 或 softmax 处理。
+
+
+
+5. **Logits 的数值稳定性问题**
+
+在计算 softmax 和交叉熵损失时，直接使用 logits 可能会遇到数值不稳定性问题。具体来说，logits 可能会出现非常大的正值或负值，导致在计算 softmax 或 sigmoid 时产生溢出。因此，框架通常会在内部进行数值稳定化处理。
+
+- **Softmax 的数值稳定性**：在计算 softmax 时，通常会从每个 logit 中减去最大 logit 值，这不会改变 softmax 输出的相对概率，但可以防止数值溢出。
+
+  $
+  \text{Softmax}(\mathbf{z}) = \frac{e^{z_i - \max(\mathbf{z})}}{\sum_{j} e^{z_j - \max(\mathbf{z})}}
+  $
+
+6. **Logits 的解释性**
+
+logits 值可以视为模型对每个类别的**未归一化分数**。它们本质上是通过输入特征的线性组合（加权求和）得到的结果，表示模型对某一类别的置信度。虽然 logits 本身不代表概率，但它们在相对大小上反映了模型的预测倾向。
+
+例如：
+- **logit 值较大**，表示模型认为该类别更有可能是正确的分类结果。
+- **logit 值较小甚至负值**，表示模型认为该类别的可能性较低。
+
+7. **Logits 的总结**
+
+- **Logits** 是机器学习分类模型最后一层的线性输出，表示未经过激活函数处理的分类得分。
+- 在二分类问题中，logit 通常通过 sigmoid 函数转换为概率；在多分类问题中，logits 通常通过 softmax 函数转换为类别概率分布。
+- Logits 在计算损失函数时至关重要，交叉熵损失函数可以直接接受 logits 输入，并在内部进行数值处理。
+- 对 logits 的合理处理有助于提高模型的数值稳定性，并为最终的分类结果提供可靠的基础。
+
+
+
+### 14、Ground truth
+
+- 在机器学习和计算机视觉等领域，**ground truth**（中文通常称为“**真实标签**”或“**真实数据**”）是指对模型训练和评估时所使用的**真实、精确的参考答案**。它通常代表对数据的客观、可靠的标注或测量，作为模型预测结果的基准。
+
 ## 一、AlexNet  阅读
 
 > 文章链接 [ImageNet classification with deep convolutional neural networks (acm.org)](https://dl.acm.org/doi/pdf/10.1145/3065386)
@@ -4302,7 +4430,7 @@ esp, iGPT 和 BEiT
 
 
 
-MAE 是一个简单的 自编码器
+MAE 是一个简单的 自编码器（无监督）
 
 - 看到了部分的观察的数据
 - 用 观察到的部分数据 **重构** 完整的原始信号
@@ -4335,7 +4463,7 @@ MAE 是一个简单的 自编码器
 
 
 
-和 ViT 的一样图片 patches 化， i.e., 一张图片 九宫格分割，3 * 3，每一格 代表一个 patch，作为一个词 token
+<font color=red>和 ViT 的一样图片 patches 化， i.e., 一张图片 九宫格分割，3 * 3，每一格 代表一个 patch，作为一个词 token</font>
 
 
 
@@ -4394,7 +4522,7 @@ a shared, learned vector 通过**一个** 共享的可以学到的向量来表�
 
 
 
-**每一个被盖住的块都表示成同样一个向量，**此向量值可学习
+==**每一个被盖住的块都表示成同样一个向量，**此向量值可学习==
 
 
 
@@ -4410,7 +4538,7 @@ a shared, learned vector 通过**一个** 共享的可以学到的向量来表�
 
 
 
-因为可见块的潜表示其实本来已经加过一次了，那么这个地方要不要再加上一次？
+==因为可见块的潜表示其实本来已经加过一次了，那么这个地方要不要再加上一次==？
 
 
 
@@ -4440,7 +4568,7 @@ pre-training；别的下游任务，解码器不需要，只需要编码器对�
 
 - 一个 patch 是 16 * 16 像素的话，线性层会投影到长为 256 的维度
 - 再 reshape(16, 16), 还原原始像素信息
-- 损失函数： MSE，像素值相减，再平方和
+- ==损失函数： MSE，像素值相减，再平方和==
 - 只作用于非可见块的损失，和 BERT 一样
 - 可见块的图片编码器已经看到了，看到答案就不算正确率了
 
@@ -4467,7 +4595,7 @@ pre-training；别的下游任务，解码器不需要，只需要编码器对�
 
 
 - 对每一个输入 patch 生成 a token：一个一个 patch 的线性投影 + 位置信息
-- 随机采样：randomly shuffle 随机打断序列，把最后一块拿掉。
+- 随机采样：==randomly shuffle== 随机打断序列，把最后一块拿掉。
 - 从 头部均匀的、没有重置的 样本 采样
 - 25% 意味着 随机 shuffle， 只保留前 25% 
 - after encoding 解码时：append 跟以前长度一样的这些掩码的一些词源 mask tokens （一个可以学习的向量 + 位置信息），重新 unshuffle 还原到原来的顺序
@@ -4614,7 +4742,7 @@ MAE 对数据增强不敏感
 
 **f 怎么采样 被盖住的块**
 
-- **随机采样 最简单最好**
+- <font color=red>随机采样 最简单最好</font>
 - 按一块块的采样 50 %
 - 按一块块的采样 75 %
 - 网格采样
@@ -4719,11 +4847,11 @@ MAE 对数据增强不敏感
 
 
 
-表3：跟前面结果比 MAE 效果是最好的
+表3：==跟前面结果比 MAE 效果是最好的==
 
 图8：跟 ViT 里面的结果比
 
-- 最上面的虚线：ViT 在 JFT 3亿标号的图片数据集合的效果
+- 最上面的虚线：<font color=red>ViT 在 JFT 3亿标号的图片数据集合的效果</font>
 - 排第二的线：只使用 ImageNet-1K 也就是1/300数据的效果
 - 两根线很接近，不能说这是一个很公平的比较
 - JFT数据集包括的类数远远大于 ImageNet
@@ -4846,3 +4974,1371 @@ MAE 算法不难
 
 
 vit 在小数据集上要多加正则化约束
+
+
+
+
+
+
+
+我自己对其的总结
+
+
+
+
+
+这篇论文的标题是《Masked Autoencoders Are Scalable Vision Learners》，由 Facebook AI Research (FAIR) 的团队撰写。论文主要探讨了在计算机视觉领域中，使用掩蔽自编码器（Masked Autoencoders, MAE）作为可扩展的自监督学习者的方法。以下是对论文内容的概要和主要章节内容的描述：
+
+
+
+摘要
+
+- 论文展示了==掩蔽自编码器==（MAE）是一种用于计算机视觉的可扩展**自监督学习者。**
+- MAE 的方法很简单：随机掩蔽输入图像的块，并重建缺失的像素。
+- 论文基于两个核心设计：开发了不对称的编码器-解码器架构，并发现掩蔽输入图像的高比例（例如75%）可以产生有意义且非平凡的自监督任务。
+- 这些设计使得训练大型模型变得高效和有效，加速了训练过程，并提高了准确性。
+- 论文的方法允许学习高容量模型，这些模型泛化能力强，例如，一个普通的 ViT-Huge 模型在仅使用 ImageNet-1K 数据的方法中取得了最佳准确性（87.8%）。
+
+
+
+第1章 引言 (Introduction)
+
+- 论文讨论了深度学习模型的增长趋势，以及在硬件快速发展的推动下，模型对数据的大量需求。
+- 作者指出，在自然语言处理（NLP）中，自监督预训练方法（如 BERT）已成功应对这一挑战，而在计算机视觉（CV）中，自监督学习的方法却落后于 NLP。
+- 论文提出了一种基于 Transformer 的掩蔽自编码器方法，通过掩蔽图像块并重建这些块来学习视觉表示。
+
+
+
+第2章 相关工作 (Related Work)
+
+- 论文回顾了在 NLP 中使用掩蔽语言建模和自回归语言建模的自监督预训练方法。
+- 作者讨论了自动编码器在表示学习中的应用，并将其与计算机视觉中的去噪自编码器（Denoising Autoencoders, DAE）联系起来。
+- 论文还探讨了自监督学习方法在计算机视觉中的研究进展，特别是在图像对比学习方面的工作。
+
+
+
+第3章 方法 (Approach)
+
+- 论文详细介绍了 MAE 的设计，包括编码器和解码器的不对称架构。
+- 编码器仅对可见的未掩蔽图像块进行操作，而解码器则从潜在表示和掩蔽标记重建完整的信号。
+- 论文还讨论了掩蔽策略、重建目标和简单实现等技术细节。
+
+
+
+第4章 ImageNet 实验 (ImageNet Experiments)
+
+- 论文描述了在 ImageNet 数据集上进行自监督预训练的实验设置，并评估了所提出方法的表示学习性能。
+- 作者通过与监督预训练和自监督预训练的对比，展示了 MAE 在不同模型大小和掩蔽比例下的性能。
+- 论文还探讨了训练计划、解码器设计和掩蔽策略对性能的影响。
+
+
+
+第5章 迁移学习实验 (Transfer Learning Experiments)
+
+- 论文评估了使用 MAE 预训练的模型在下游任务中的迁移学习能力，包括目标检测、实例分割和语义分割。
+- 作者展示了 MAE 在这些任务中相比于监督预训练模型的性能优势。
+
+
+
+第6章 讨论和结论 (Discussion and Conclusion)
+
+- 论文总结了 MAE 的主要发现，并讨论了自监督学习在计算机视觉领域的潜力。
+- 作者指出，尽管图像和语言在本质上是不同的信号，但 MAE 能够通过丰富的隐藏表示学习到复杂的视觉概念。
+
+
+
+附录 (Appendix)
+
+- 论文提供了实验的额外细节，包括训练设置、超参数选择、模型变体的比较等。
+
+整体而言，这篇论文为自监督学习在计算机视觉领域的应用提供了有价值的见解，并展示了掩蔽自编码器作为一种有效方法的潜力。
+
+
+
+
+
+
+
+
+
+## 八、MoCo 阅读
+
+
+
+
+
+MoCo: CVPR 2020 最佳论文，视觉 + 对比学习的里程碑式的工作
+
+
+
+对比学习：
+
+- 简单、好用；
+- 19年以来，视觉领域乃至整个 ML 领域最火的方向之一；
+- 盘活了从17年很卷的CV领域，MoCo是其中的优秀工作之一
+
+
+
+**MoCo：无监督的表征学习工作 在 CV上表现怎么样？**
+
+- 分类：逼近了有监督的 baseline
+- 检测、分割、人体关键点检测：大幅超越有监督预训练的模型 (ImageNet 上预训练的模型)
+- CV 领域的定心丸，无监督学习真的可以，有可能真的不需要大规模、有标号的数据集做预训练。
+- 侧面正面了 **Yann LeCun** 的 NeurIPS 2016 的演讲图
+
+
+
+![img](https://i0.hdslb.com/bfs/note/c7a1dfae467d9e5e343fc62889daf30895f33af5.png@620w_!web-note.webp)
+
+
+
+蛋糕🎂：ML
+
+樱桃🍒：RL
+
+蛋糕的糖霜 icing：有监督学习
+
+**蛋糕本质：无监督学习**
+
+
+
+现在无监督的进展：
+
+- NLP 大模型都是自监督的预训练方式
+- CV 的大模型用自监督预训练，也快了
+
+
+
+Note: 多听大佬的 talk 报告有好处，找下一个研究方向
+
+
+
+**什么是对比学习？+ 前人工作**
+
+
+
+01:39
+
+
+
+MoCo 动量对比学习：假设读者已经了解对比学习
+
+
+
+对比学习：通过对比去学习模型，只需要知道图 1 和 图 2 相似，图 1、图 2 和 图 3 不相似；而不需要真的知道 图 1 和 图 2 代表的是人，图 3 代表的是狗。
+
+
+
+![img](https://i0.hdslb.com/bfs/note/976897b4dd45be0ec39bb95b2c56f1d02670c32e.png@620w_!web-note.webp)
+
+
+
+
+
+3 张图进入一个网络 M 得到特征 f1、f2、f3，在一个学习好的特征空间 embedding space 中，f1、f2 的特征尽量近，和 f3 的特征尽量远离。
+
+
+
+![img](https://i0.hdslb.com/bfs/note/d7f2fb3a445b105dd1bee24e89c24ff56f19e18f.png@620w_!web-note.webp)
+
+
+
+对比学习学到的很好的特征：类似物体在这个特征空间 相邻，不类似的物体在特征空间 远离
+
+
+
+类似 meta-learning 的基于度量的学习？
+
+
+
+
+
+**Q: 图 1 和 图 2 相似，和图 3 都不相似，难道不是有监督学习吗？Why 对比学习在 CV 领域被认为是无监督训练呢？**
+
+==CV 领域 设计巧妙的代理任务 pre-text task，人为设立一些规则 —— 定义哪些图片相似、哪些图片不相似，为自监督学习提供监督信号，从而自监督训练==
+
+
+
+
+
+**Example 代理任务 instance discrimination 个体判别**
+
+
+
+04:30
+
+
+
+
+
+一个无标注的数据集，n 张图片，x1, x2, ..., xn
+
+
+
+**随机选取一张图片，做 transformation** 
+
+
+
+以 x1 图片为例，x1 随机裁剪 + 数据增广 得到 xi1, xi2 （看起来和 x 1 有区别的 2 张照片，x1 的正样本），数据集中的其它图片 x_j, j ≠ i 是 x1 的负样本
+
+
+
+i.e., ImageNet-1K 此时不是 1000 个类别，而是 100w 个类别。每个图片都是它自己的正样本，其余都是负样本。
+
+
+
+
+
+![img](https://i0.hdslb.com/bfs/note/6f316ff053611f410064dc29bb20bf7e04759ca2.png@620w_!web-note.webp)
+
+
+
+基于 图片和图片本身的变换是正样本，和其它图片是负样本 的代理任务， + 模型 得到特征，+ 对比学习的目标函数 i.e., NCE loss (正文有提)
+
+
+
+![img](https://i0.hdslb.com/bfs/note/ca91999f2c17ed82d14dff4129bf45855c4aaa0e.png@620w_!web-note.webp)
+
+
+
+==对比学习的框架：灵活性--定义正负样本的规则==
+
+- 同一个视频里的任意两帧 是 正样本，和其它视频的所有帧是负样本
+- NLP, simCSE 把同样的句子扔给模型，但是做 2 次 forward，通过不同的 dropout 得到一个句子的 2 个特征；和其它所有句子的特征都是负样本。 
+- CMC 论文：一个物体的不同视角 view（正面、背面；RGB 图像、深度图像）作为不同形式的正样本。
+- 多模态领域：Open AI 的 CLIP 模型
+
+
+
+
+
+### 1、题目和作者
+
+
+
+07:33
+
+
+
+动量对比学习的方法做无监督视觉特征学习
+
+
+
+Momentum Contrast: 动量对比学习
+
+- 动量：(指数)加权移动平均值$ y_t = m * y_{(t - 1)} + (1 - m) * x_t$
+- m: 动量的超参数
+- y_(t - 1): 上一个时刻的输出
+- x_t: 当前时刻的输入
+- m 趋近于 1，y_t 改变缓慢，当前时刻的输入 x_t 没什么影响
+- m 趋近于 0, y_t 更多依赖于当前时刻的输入。
+- MoCo 利用动量的特性，缓慢的更新一个编码器，==从而让中间学习到的字典中的特征尽可能保持一致==。
+
+
+
+作者来自 FAIR, 大佬 * 5
+
+
+
+### 2、摘要
+
+
+
+09:12
+
+
+
+本文提出 MoCo (动量对比) 做无监督的表征学习。
+
+
+
+**MoCo 从什么角度做对比学习呢？**
+
+**dictionary look-up**, 字典查询任务, a dynamic dictionary with a queue and a moving-averaged encoder 动态字典
+
+- **一个队列**：<font color=red>队列中的样本**无需梯度回传**，可以放很多负样本，让字典变得很大</font>
+- **一个移动平均的编码器**：让字典的特征尽可能的保持一致
+- 一个大的、一致的字典，有利于 无监督的对比学习 训练。
+
+
+
+**本文的亮点是什么？**
+
+结果 nice, MoCo （第一个）在 （分类、检测、分割）主流的 CV 任务证明 无监督学习 也不比 有监督学习 差
+
+- ImageNet 分类：linear protocol 做测试，MoCo 和 之前最好的无监督学习方式差不多
+- ==linear protocol （类似 MAE 的 linear probing）测试：freeze backbone 主干网络的参数不调整，只微调最后的分类全连接层（分类头）。把 backbone 当成特征提取器，可以证明 backbone 学习图片特征的好坏。==
+- 容易迁移到下游任务。**满足了大家对 大规模、无监督训练 的想象：**
+- 7 个 下游任务表现好 counterpart: 模型使用的一样的 i.e., Res50，只是训练方式不一样，i.e., 有监督的带标签数据训练，无监督的不带标签的数据训练。（控制-训练方式-变量法）
+- 在大规模的数据集上进行无监督训练，模型学到一个很好的特征，而且学到的特征可以迁移，在小、少标注数据的下游任务取得好的结果。
+
+
+
+**MoCo 有什么意义呢？**
+
+==填补了 CV 领域的无监督学习和有监督学习的 gap==
+
+
+
+### 3、引言
+
+
+
+12:04
+
+
+
+**第一段：无监督学习为什么在 CV 不成功？原始信号不一样** 
+
+<font color=red>**NLP 的离散单词更具语义性，CV的连续、高维信号不好构建字典**</font>
+
+引入无监督学习的成功：
+
+- 无监督学习在 NLP 很成功, i.e., GPT, BERT
+- 无监督学习在 CV 大幅落后于 主流的 有监督学习
+
+无监督在 CV 不成功的原因是什么？
+
+- 原始信号空间的不同
+- NLP 原始信号是==离散的，词、词根、词缀==，容易构建 tokenized dictionaries 做无监督学习
+- tokenized: 把一个词对应成某一个特征
+- Why tokenized dictionaries 有助于无监督学习？
+- **把字典的 key 认为是一个类别，有类似标签的信息帮助学习**
+- NLP 无监督学习很容易建模，建好的模型也好优化
+- CV **原始信号是连续的、高维的，不像单词具有浓缩好的、简洁的语义信息，不适合构建一个字**典
+- 如果没有字典，无监督学习很难建模
+
+
+
+**第二段：别人怎么用对比学习的方法在 CV 的无监督学习里？dynamic dictionaries**
+
+近期结合 <font color=blue>对比学习和 CV 的无监督学习效果不错</font>，出发点motivation 不一样，但可以被归纳为 **“动态字典法”**
+
+
+
+![img](https://i0.hdslb.com/bfs/note/4803a4afa50f2b1e833ed75914cb824b22e31c27.png@630w_!web-note.webp)
+
+
+
+x_1^1: anchor
+
+x_1^2: positive
+
+x2, x3, ......, xn: negative  
+
+编码器 E_11 和 E_12 可以一样，可以不一样 
+
+
+
+**Q：负样本使用哪个编码器？**
+
+E_12：因为 positive 和 negative 都是相对 anchor f_11 来说的。==正负样本使用同样的编码器==
+
+
+
+![img](https://i0.hdslb.com/bfs/note/f8c8012f7ce51fbf339b746f70ee07909b74c501.png@630w_!web-note.webp)
+
+
+
+**Q: 对比学习怎么做？**
+
+f11 和 f12 相近，f11 和 f2, f3, ......, fn 远离
+
+
+
+**Q: Why 对比学习可以归纳成 在做一个动态的字典 呢？**
+
+
+
+15:25
+
+
+
+==f11 当成 query 在 f12, f2, f3, ......, fn 组成的字典的 key 特征条目 k1, k2, ...... 里面查找，dictionary look-up 靠近 f12, 远离 f2, f3, ......==
+
+- be similar to its matching key and dissimilar to others
+- learning is formulated as minimizing a contrastive loss 最小化对比学习的目标函数
+
+
+
+![img](https://i0.hdslb.com/bfs/note/85b651568e280324a74b1e21f79d3714eec2f1f7.png@630w_!web-note.webp)
+
+
+
+**第三段：从动态字典的角度看对比学习，什么样的字典才适合呢？ 大 + 一致性**
+
+
+
+17:09
+
+
+
+
+
+- large 
+- 从连续高维空间做更多的采样。字典 key 越多，表示的视觉信息越丰富，匹配时更容易找到具有区分性的本质特征。
+- 如果 字典小、key 少，==模型可能学到 shortcut 捷径，不能泛化==
+- consistent 
+- 字典里的 key (k0, k1, k2, ......, kN) 应该由相同的 or 相似的编码器生成
+- **如果字典的 key 是由不同的编码器得到的**，query q 做字典查询时，很有可能 找到和 query 使用同一个 or 相似编码器生成的 key，而不是语义相似的 key。另一种形式的 shortcut solution
+
+
+
+![img](https://i0.hdslb.com/bfs/note/8c6f711014b2b167d0fbcd98c74d04cb63856f71.png@640w_!web-note.webp)
+
+
+
+已有的 CV 对比学习 动态字典方法在 large or consistent 上有不足。
+
+
+
+引言结构：介绍研究动机、相关研究工作的不足、想要达到的目标 ---> 本文的工作
+
+
+
+
+
+**第四段：本文的 MoCo**
+
+
+
+19:07
+
+
+
+
+
+**为什么要提出 MoCo? 给CV 无监督对比学习 构建一个 大 (by queue)+ 一致 (momentum encoder) 的字典**
+
+
+
+图1 MoCo 框架图 queue, momentum encoder
+
+
+
+
+
+![img](https://i0.hdslb.com/bfs/note/23e8f83e2164097c3695e45d55c969d43e87bcab.png@640w_!web-note.webp)
+
+
+
+- queue 数据结构: 剥离 字典的大小 和 显卡内存的限制，让字典的大小 和 模型每次做前向传播的 batch size 的大小 分开
+- 字典很大（成千上万），意味着要输入很多很多的图片，显卡内存吃不消
+- current mini-batch enqueued and the oldest mini-batch dequeued 当前 mini-batch 入队，最早进入队列的 mini-batch 出队
+- 队列的大小 == 字典的大小，但是每次做 iteration 更新，并不需要更新字典中所有 key 元素的值。普通 GPU 训练
+
+
+
+- momentum encoder: 
+- Q：使用 queue，只有当前 mini-batch 的特征是由当前的编码器得到的；==之前的 key 是由不同时刻的编码器抽取的特征，如何保持 consistent 呢==？
+- momentum encoder 由 当前时刻的 encoder 初始化而来	
+- $theta_k = m * theta_(k-1) + (1-m) * theta_q$
+- 动量参数 m 较大时，theta_k 的更新缓慢，不过多的依赖于 theta_q 当前时刻的编码器，即不随着当前时刻的编码器快速改变，尽可能保证 字典里的 key 都是由相似的编码器生成的特征，保证特征的 consistent
+
+
+
+
+
+<font color=red>关键是保持特征的一致性</font>
+
+基于 large + consistent dynamic dictionary，MoCo 可以很好的无监督学习视觉特征。
+
+
+
+**第五段：MoCo 的代理任务 pretext task？ instance discrimination**
+
+
+
+22:04
+
+
+
+MoCo 建立模型的一种方式，很灵活，可以和很多代理任务使用
+
+
+
+**instance discrimination**: （个体判别）query 和 key 匹配 如果它们来自于同一张图片的不同视角, i.e., 不同的裁剪
+
+
+
+MoCo 用 instance discrimination 无监督训练 在 ImageNet 上可以和之前最好的结果打个平手 or 更好的表现 competitive results
+
+
+
+
+
+**第六段：MoCo 的效果怎么样？ 卖结果**
+
+
+
+23:05
+
+
+
+**无监督学习的目的**：==在一个很大的无标注的数据集上训练，模型学到的特征可以很好的迁移到下游任务==。
+
+
+
+MoCo 做到了。7个检测 or 分割的任务表现很不错。超越 ImageNet 有监督训练的结果，甚至有时大幅度超越 in some cases by nontrivial margins.
+
+
+
+
+
+**无监督学习的期待：更多数据、更大的模型，性能会提升，不饱和。**
+
+
+
+MoCo 在 10亿 Instagram 数据集（更糙 relatively curated 真实*******、一张图片有多个物体; ImageNet 数据集的图片大多只有一个图片、在图片中间） 上性能还有提升
+
+
+
+
+
+中型 ImageNet or 大型 Instagram 数据集，MoCo 把 无监督学习和有监督学习的 坑🕳 填平。
+
+
+
+应用展望：之前 ImageNet 预训练好的模型，可以尝试替换为 MoCo 预训练好的模型。
+
+
+
+### 4、结论
+
+
+
+25:33
+
+
+
+==结论：MoCo在一系列的任务和数据集上效果很好 positive result==
+
+
+
+- 1000 倍数据集数量的增加， MoCo 性能的提升不高
+- 大规模数据集可能没有完全被利用
+- 尝试开发其它的代理任务 pretext task
+- <font color=red>除了 instance discrimination 代理任务，类似 NLP 的代理任务 masked auto-encoding</font>
+- MAE, 大佬 2 年前就有了想法，做了实验；做研究急不来
+- 像 NLP 的 BERT 使用 masked language model 完形填空做自监督预训练
+
+
+
+==点题总结：MoCo 和 其它对比学习的 代理任务的解和==
+
+- MoCo 设计的初衷：去构造一个大的字典，从而让正负样本能够更有效地去对比，提供一个稳定的自监督信号，最后去训练这个模型
+
+
+
+
+
+### 5、相关工作
+
+
+
+27:30
+
+
+
+
+
+unsupervised / self-supervised learning: 
+
+- 自监督学习是无监督学习的一种。
+- 前人研究不怎么区分，MoCo使用 无监督学习 unsupervised learning (定义更广泛一些)
+
+
+
+两个可以做的点：pretext tasks and loss functions
+
+- **代理任务**：不是大家实际感兴趣的任务 (检测、分类、分割实际应用任务)，而是为了 学习一个好的数据特征表示
+- **损失函数**：和代理任务可以分开研究。 <font color=red size=5>MoCo 的创新点在损失函数，又大又一致的字典 影响 info NCE 目标函数的计算</font>
+
+
+
+
+
+28:30
+
+
+
+
+
+==损失目标函数：衡量 模型的预测输出 和 固定的目标之间的 difference==。
+
+- L1 or L2 losses 
+- i.e., Auto-encoder（生成式网络的做法）, 输入一张原图 or 一张被干扰的图，经过编码器、解码器 重构输入的图，衡量是原图 和 重构图 之间的差异。
+
+
+
+**判别式网络**：eight positions 2015
+
+一张图片 打成 有序号的 9 宫格，给 中间的 第 5 格 和 剩下随机挑一格，**预测**随机挑的这一格是中间 第5 格 的**方位**（8个方位可选）。
+
+
+
+pretext tasks：分类任务，因为每一个方格都自带序号，输出分到 8 个方位的哪一类。
+
+
+
+
+
+**损失函数：判别式、生成式、对比学习、对抗学习**
+
+
+
+- 对比学习的损失：**目标不固定，训练过程中不断改变。目标有编码器抽出来的特征（MoCo 的字典）而决定**
+- 判别式：预测 8 个位置中的哪一个方位
+- 生成式：重建整张图
+- 对比学习的目标：==测量 样本对 在特征空间的相似性==。
+- 相似样本离得近，不相似样本离得远
+- 最近无监督表现好的文章都用了 contrastive learning (Sec. 3.1 讨论)
+
+
+
+
+
+- 对抗学习的损失：衡量两个概率分布之间的差异，i.e., GAN
+- unsupervised data generation 做无监督的数据生成
+- 对抗性的方法做特征学习
+- 如果可以生成很好、很真实的图片，模型应该学到数据的底层分布
+- GAN 和 NCE 的关系 noise-contrastive estimation Ref. [24]
+
+
+
+
+
+代理任务的生成：
+
+- denoising auto-encoders 重建整张图
+- context auto-encoders 重建某个 patch
+- cross-channel auto-encoders (colorization) 给图片上色当自监督信号
+- pseudo-labels 图片生成伪标签
+- exemplar image 给同一张图片做不同的数据增广，它们都属于同一个类。
+- patch ordering 九宫格方法：打乱了以后预测 patch 的顺序, or 随机选一个 patch 预测方位 eight positions 
+- 利用视频的顺序做 tracking 
+- 做聚类的方法 clustering features
+
+
+
+对比学习和代理任务的关系：
+
+- **不同的代理任务 可以和 某种形式的对比学习的目标函数 配对使用**
+- MoCo 论文里 instance discrimination 个体判别方法  ++++ examplar based 代理任务很相关
+- CPC contrastive predictive coding 用上下文信息预测未来 ++++ context auto-encoding 上下文自编码
+- CMC contrastive multiview coding 利用一个物体的不同视角做对比 ++++ colorization 图片上色（同一个图片的 2 个视角：黑白 和 彩色）
+
+
+
+**相关工作总结：**
+
+
+
+32:38
+
+
+
+简洁明了
+
+从 代理任务 和 目标函数 （2 个和有监督学习不同的点）写相关工作
+
+
+
+有监督学习的过程
+
+
+
+无监督学习 or 自监督学习 缺少 ground truth，没有标签怎么办？
+
+- 代理任务来帮忙，自己造标签。
+- 代理任务生成自监督的信号，充当 ground truth 的标签信息
+
+
+
+**有输出 y 和 标签信息 ground truth，还需要什么呢？**
+
+==目标函数 L，衡量 输出 Y 和 标签 ground truth 的差异，让模型学到更好==
+
+
+
+MoCo 从 目标函数 L 和 代理任务 pretext tasks 生成 ground truth 写相关工作
+
+
+
+
+
+### 6、MoCo方法
+
+
+
+33:44
+
+
+
+**3.1 Contrastive learning as dictionary look-up** 
+
+
+
+对比学习和最近的发展，都可以看成是一个训练一个 encoder 来做 字典查询 的任务
+
+
+
+
+
+### 7、实验
+
+
+
+01:06:10
+
+
+
+
+
+
+
+
+
+
+
+### 8、总结
+
+
+
+01:23:20
+
+
+
+感谢 MoCo 论文和高效实现，普通 GPU 跑对比学习的实验，做激动人心的研究。
+
+MoCo 激励学者研究 “MoCo 学出来的特征 和 有监督学习学出来的特征有什么区别？还能从什么方向提高对比学习？”
+
+
+
+**期待对比学习的论文串烧**
+
+第一阶段：Contrastive Predictive Coding (CPC), CMC Contrastive Multiview Coding, 
+
+第二阶段：MoCo v1, simCLR v1, MoCo v2, simCLR v2 
+
+第三阶段：不需要负样本的 BYOL, bootstrap your own latent, SimSiam
+
+第四阶段： 用了 vision transformer 的 MoCo v3, 
+
+
+
+
+
+## 九、CLIP 串烧
+
+
+
+
+
+过去一年中，大家如何将CLIP模型和思想应用到其他领域中去。
+
+![img](https://i0.hdslb.com/bfs/note/9088935963e04eddac34a9dda1f580c156b7d2f4.jpg@690w_!web-note.webp)
+
+
+
+![img](https://i0.hdslb.com/bfs/note/83fb66ea6fb6cbfc8ae6f361644e5712878cade7.jpg@690w_!web-note.webp)
+
+
+
+![img](https://i0.hdslb.com/bfs/note/a79f7e1aa1e092646bc1b6e7a380ba05caf014c3.jpg@690w_!web-note.webp)
+
+
+
+CLIP： 给定图像文本对，分别通过对应编码器，对角线上元素是正样本，其他位置是负样本。结果是zero-shot能力非常强。推理的时候，对于一个图片，把所有可能候选都作为prompt丢进模型，计算相似度，最大相似度对应的文本标签就是类别。
+
+### 1、Lseg
+
+
+
+
+
+![img](https://i0.hdslb.com/bfs/note/2e59f44debf0cb71d1060c8655d59ebc3683f715.jpg@690w_!web-note.webp)
+
+图片分类->像素级别分类。
+
+![img](https://i0.hdslb.com/bfs/note/2c85013193c2abf8491b4262e7c358755c84f1a5.jpg@690w_!web-note.webp)
+
+zero-shot 分割 零样本
+
+![img](https://i0.hdslb.com/bfs/note/7c6fce0725f7e8ffc3cac847380f378d1685d8fe.jpg@690w_!web-note.webp)
+
+
+
+dpt : vision transformer + decoder
+
+文本编码器：用的CLIP的文本编码器，而且自始至终是锁住的。
+
+文章意义是：将文本加入到传统图像任务中
+
+![img](https://i0.hdslb.com/bfs/note/5cf6d66f38d96c8772714511a7cb3552ec7b5a3d.jpg@690w_!web-note.webp)
+
+
+
+![img](https://i0.hdslb.com/bfs/note/1b6c279009f2287f1bf5609557d2734650851552.jpg@690w_!web-note.webp)
+
+Lseg zero-shot还是比1-shot这种要差很多，有十几个点的提升空间。
+
+- **LSeg可以直接应用于新的类别,而无需为这些类别重新训练模型,这是zero-shot模型的典型特征（为什么说LSeg是zero-shot？ perplexity回答）**
+- One-shot，少样本，每个新类别至少有一个分类。
+
+ 
+
+![img](https://i0.hdslb.com/bfs/note/f50a3345c999ec1116c555ed920701ae2c5282fd.jpg@690w_!web-note.webp)
+
+
+
+failure cases: 
+
+- CLIP本质上是选择相似性
+- zero-shot做分割能提升的空间很大
+
+
+
+### 2、group ViT
+
+![img](https://i0.hdslb.com/bfs/note/87028fb13c45875766a7f72290b1ca1b433d7925.jpg@690w_!web-note.webp)
+
+- LSeg虽然用了CLIP的预训练参数，但是不是无监督学习框架，也不是对比学习，没有对文本进行学习，还是依赖手工标注的segmentation mask。
+
+- 如何摆脱掉手工标注，如何用文本来做监督信号，从而达到无监督训练？ GroupViT在这个方向上做出了贡献。
+
+![img](https://i0.hdslb.com/bfs/note/8734010b5951b2d096d511abab54f96247ed5615.jpg@690w_!web-note.webp)
+
+视觉grouping： **聚类中心点，从点开始发散，得到group，是一种自下而上的方式。**
+
+groupViT贡献：已有的ViT框架中，加入grouping block，同时加入可学习的group tokens。
+
+图像编码器输入：patch embedding + group tokens
+
+group tokens : 64 * 384, 64是希望刚开始有比较多的聚类空间，384是为了和patch embedding同维。
+
+经过6层transformer layer学习之后，加了一个grouping block，认为此时group token已经学的挺好的了，尝试来cluster一下，合并成为更大的group，学到更有语义的信息。此时加入grouping block，将patch embedding分配到group token上。此时整个ViT的输入长度从196 + 64 -> 64
+
+![img](https://i0.hdslb.com/bfs/note/ed9e25d5b1d0591955bb07f4a0b8a9e7f51914cc.png@690w_!web-note.webp)
+
+聚类分配的过程是不可导的，这里使用**gumbel softmax**将整个模型变成可导的，从而整个模型就可以做端到端的训练了。
+
+到此为止完成了第一阶段的grouping。
+
+由于一般segmentation中类别也不会很多，所以这里作者加了新的8个grouping tokens(8*384)，希望将64个再次映射到8个，本文作者在第9层transformer layer之后再做了一次groupign block。图像分成了8大块，每个块对应了一个特征。
+
+
+
+challenge: 文本有一个特征，但是图像为序列长度为8的特征序列，如何将8打开特征融合成1块，变成整个图像的image level的特征，作者采用了average pooling。
+
+
+
+总的来说，模型还是比较简单，所以scale性能可能比较好。
+
+
+
+模型怎么做zero-shot推理？
+
+![img](https://i0.hdslb.com/bfs/note/9245646a8579816da5d9422d976b01ca62ee37fa.png@690w_!web-note.webp)
+
+
+
+局限性： 模型最后只有8个group embedding，图片分割最多只能检测8类。
+
+问题： group token如何映射到原图片上？
+
+![img](https://i0.hdslb.com/bfs/note/b89e2c07c71617bad5804a986550398bcf47d28a.jpg@690w_!web-note.webp)
+
+上图对应groupin的效果
+
+
+
+数值上的表现
+
+![img](https://i0.hdslb.com/bfs/note/4cf87a3286871be4592fa78baba19707741bb858.png@690w_!web-note.webp)
+
+无监督分割还是很难
+
+两个limitations:
+
+- ==现在groupViT更偏向图像编码器，没有很好使用dense特性==。
+- 分割中的背景类，groupViT不光选择最大相似度，还设置了相似度的阈值。如果和所有类的相似度都达不到阈值，就认为是背景类。对于类别很多的情况，很容易出现前景物体置信度和背景物体置信度差不太多，如何设置阈值就很重要。分割做的很好，但是分类做的比较差。（这里将预测分割的部分和gt对上，所以只要分割做的好，分类就一定正确，发现这样性能提升了20多个点）。 这个问题的本质是因为CLIP的训练方式，只能学习到物体语义非常明确的东西，学不到非常模糊的（比如背景）的类。解决方案：可学习阈值？修改zero-shot推理方式？训练中增加约束将背景类融入其中。
+
+
+
+### 3、ViLD
+
+![img](https://i0.hdslb.com/bfs/note/bc1745f6d78ec200f1513054edd129f415cd7bc3.jpg@690w_!web-note.webp)
+
+VilD
+
+==看标题就知道是把clip当成一个teacher，从而去蒸馏模型，从而达到zero shot做目标检测==。
+
+
+
+引言：
+
+![img](https://i0.hdslb.com/bfs/note/c7f159478f0da00abf42e96749d48259b835ec06.png@690w_!web-note.webp)
+
+是否可以在现有数据集上，不去做额外标注（黄鸭子），检测出新类别。
+
+模型：
+
+![img](https://i0.hdslb.com/bfs/note/dd76cc73b16449ceacd48099a5ef2360f5792451.jpg@690w_!web-note.webp)
+
+
+
+a是有监督的baseline,bcd都是viLD方法。
+
+baseline就是两阶段mask rcnn。
+
+![img](https://i0.hdslb.com/bfs/note/dccec2278d7daeaeee5e696fef5234cd4eca873b.jpg@690w_!web-note.webp)
+
+这里的文本类别还是base类，做有监督训练。
+
+**ViLD-text只是把图像特征和文本特征连接到了一起。其他类别都塞给了背景类，专门有一个背景类embedding，在模型中学习。**
+
+数学公式：
+
+![img](https://i0.hdslb.com/bfs/note/fa392d85bfc6e388da5cf939687dd00eb55fc46d.jpg@690w_!web-note.webp)
+
+图像I，phi(I)抽取图像特征，r是提前知道的proposal，经过额外的计算R，就得到region embedding e_r。
+
+接下来定义了一个background embedding, e_{bg}，然后还有从文本中的t1,t2,..,t_{CB}, 分别点乘计算相似度，类似logits，然后和gt计算ce loss。
+
+![img](https://i0.hdslb.com/bfs/note/34c84b4d674491e0496e9f9563eb6b13fdbff768.jpg@690w_!web-note.webp)
+
+ViLD-image，想法： 希望region embedding尽可能和CLIP一致，最简单的方法是知识蒸馏。**粉色背景是teacher网络，左边是student网络。**使用L1 loss做蒸馏。因为现在的监督信号不再是人工标注，而是CLIP的编码，这里不再受基础类的限制，抽的proposal既可以是基础类的proposal，也可以是新类的proposal，都可以训练了，增强了做==open-vocabulary==的能力。 弊端：这里没有用上全部N个proposal，但是这里只用了M个，提前把每个图片，利用提前训练好的RPN(region proposal network)，预抽取M个proposal，这些proposal全部做crop & resize，过CLIP模型，把M个clip image embedding抽好，所以训练时候，只需要硬盘上load过来就行了。
+
+![img](https://i0.hdslb.com/bfs/note/5552b29a9e4df78dfc69aa8b3cc8d05e9c3fb868.jpg@690w_!web-note.webp)
+
+<font color=red>ViLD = VilD text + VilD image</font>
+
+![img](https://i0.hdslb.com/bfs/note/209f5ad6cb489ebd7675f042403804c58dd88410.jpg@690w_!web-note.webp)
+
+模型总览图
+
+
+
+主要的表格
+
+LVIS数据集：非常**长尾的目标检测数据集**，共1203个类，使用的还是COCO的图片，有一些类只标注了一次两次，所以这里有三个类，r(rare), c(common), f(frequent)。这样算AP的时候，就可以针对这几个分别算AP。
+
+![img](https://i0.hdslb.com/bfs/note/911f84497dd2d637f68cd07142739c1490921f0e.jpg@690w_!web-note.webp)
+
+common和frequent认为是基础类，rare是novel类。
+
+但是这里LVIS数据集的特性导致有监督的模型也未必能够在rare上做的很好。
+
+
+
+
+
+![img](https://i0.hdslb.com/bfs/note/19b549a59fecf4c74422545794913f625baf5b13.jpg@690w_!web-note.webp)
+
+zero-shot方法，==直接拓展到其他数据集上，虽然比有监督上差，但在小规模数据集上，已经比较接近了，所以它 open-vocabulary上已经做的挺好了==。
+
+
+
+### 4、GLIP
+
+
+
+![img](https://i0.hdslb.com/bfs/note/ea598ae15026e842707fdf0d398d43f41dd7376f.jpg@690w_!web-note.webp)
+
+研究动机：怎么利用更多数据（没有精心标注数据），==将图像文本对用上==。
+
+vision grouding任务，给一句话，将这句话中的物体和当前图片中的物体找出来。
+
+将detection和phrasing grounding合起来。
+
+
+
+**Unified Formulation**
+
+![img](https://i0.hdslb.com/bfs/note/e0ec70b9ea2048712a203eadf42e16496bd52c57.jpg@690w_!web-note.webp)
+
+detection分类loss怎么算？vision grouding分类loss怎么算？如何合并到同一个框架下面。
+
+
+
+01:03:1420240712
+
+
+
+
+
+![img](https://i0.hdslb.com/bfs/note/e9082ce9b82848b2dd43cad540900809257667ea.png@690w_!web-note.webp)
+
+
+
+detection的cls loss计算方式： bounding box，接一个分类头，然后得到分类logits，然后用nms把bounding box筛选一下，和gt计算cross entropy loss.
+
+![img](https://i0.hdslb.com/bfs/note/1a76d2505aaf95bfe1b25040a5ab30bb94fde215.png@690w_!web-note.webp)
+
+
+
+vision grounding cls loss计算方式：
+
+匹配分数，图像中一样的处理，句子变成prompt，过一个文本的编码器，然后和图像embedding计算相似度（画图和VilDtext一致）
+
+
+
+两种方式差不多，判断什么时候算positive match，什么时候算negative。
+
+
+
+![img](https://i0.hdslb.com/bfs/note/fabd8625b3ea3a3eb40ecf48cccfd62ea9cfc682.png@690w_!web-note.webp)
+
+Caption是self-training，用的伪标签peuodo label
+
+
+
+
+
+![img](https://i0.hdslb.com/bfs/note/7d47a0b4875957f7fa710c7f472987c9951c8243.jpg@690w_!web-note.webp)
+
+模型的总体框架
+
+![img](https://i0.hdslb.com/bfs/note/2ecf0dd31576db3b47f130b95cd90bdf5fff7177.png@690w_!web-note.webp)
+
+效果
+
+
+
+
+
+![img](https://i0.hdslb.com/bfs/note/fbd2abe0c5a98957aa84644e462f4e5a090834cf.jpg@690w_!web-note.webp)
+
+数值结果，zero-shot可以达到50AP, finetune一下，也可以达到60。
+
+GLIP不论是zero-shot还是finetune，性能都非常强。
+
+### 5、GLIP V2
+
+
+
+![img](https://i0.hdslb.com/bfs/note/fde41d81dd001f7a5c487f6f5ce9f3e19097aa9e.jpg@690w_!web-note.webp)
+
+GLIPv2: 分割检测、VQA、Visual grouding、Visual captioning都放进来了
+
+
+
+![img](https://i0.hdslb.com/bfs/note/0550f45215f65ca53c20910163058088727736b9.jpg@690w_!web-note.webp)
+
+思想和框架和GLIP差不多，但是加入了更多任务。
+
+OFA， Unified-IO，提供统一框架囊括更多任务，争取把预训练任务学的又大又好。
+
+
+
+
+
+### 6、CLIPasso
+
+
+
+（CLIPasso: Semantically-Aware Object Skectching）  语义感知的对象偏移
+
+**将CLIP做teach, 用它蒸馏自己的模型**
+
+![img](https://i0.hdslb.com/bfs/note/f6ae4415e057030cd079937ae7ff142582a95fe0.png@690w_!web-note.webp)
+
+
+
+- ​	semantic loss: <原始,生成>特征尽可能的接近
+- ​	几何形状上的限制，==geomatric loss==: 
+-  perceptual loss把模型前面几层的输出特征算<原始，生成i>的相似性，而不是最后的2048维的特征（<font color=red>因为前面的特征含有长宽的概念，对几何位置更加的敏感</font>）。保证几何形状，物体朝向 位置的一致性
+- **基于saliency的初始化方式：**用一个训练好的VIT，把最后一层的多头自注意力加权平均得到一个saliency map，对saliency map显著的地方进行采点。（**在显著的地方采点其实就相当于自己已经知道了这个地方有物体或已经沿着这个物体的边界画贝兹曲线了）效果更稳定**
+
+![img](https://i0.hdslb.com/bfs/note/f76c00ac85d431a3361e51d6e03acf4d3e28202d.png@690w_!web-note.webp)
+
+
+
+- 一张V100 6min 2000 iters
+- 后处理：一张input，三张简笔画，取两个loss最低的那张
+
+优点：
+
+- zero-shot: 不受限于数据集里含有的类型
+- 能达到任意程度的抽象，只需要控制笔画数
+
+![img](https://i0.hdslb.com/bfs/note/33c9ff5605b146ebf52507ec56e619df0372edac.png@690w_!web-note.webp)
+
+局限性：
+
+- <font color=blue>有背景的时候，效果不好</font>（自注意力图等不好）-> automatic mask的方式如U2Net，将物体扣出里（但是是two step了，不是end to end）
+- 简笔画都是同时生成的，不像人画的时候具有序列性（做成auto-regressive，根据前一个笔画去定位下一笔在哪 ） 及其没有时序
+- 必须提前制定笔画数，手动+同等抽象度不同图像需要的笔画数不一样多，（将笔画数也进行优化）
+
+CLIP+视频
+
+
+
+### 7、CLIP4clip
+
+
+
+>**Empirical study** 是一种基于**观察**和**实验**数据的研究方法，==通过直接收集和分析实际数据，来验证理论或提出新发现==。这种研究方法与纯理论研究相对，它依赖于现实世界的证据，并通过系统的观测和实验设计来探索、验证或反驳假设。
+
+
+
+
+
+CLIP4clip: An empirical study of CLIP for end to  end video clip retrieval
+
+![img](https://i0.hdslb.com/bfs/note/b3f37256c61561cc84a635fce7cd9a52e613fd53.png@690w_!web-note.webp)
+
+
+
+视频是有时序的。一系列的帧，10个image token(cls token)如何做相似度计算:
+
+1.<font color=red>parametr-free 直接取平均（目前最广泛接受的）。没有考虑时序，区分不了做下和站起来</font>
+
+2.加入时序，LSTM或transformer+位置编码
+
+late fusion:==已经抽取好图像和文本的特征了，只是在最后看怎么融合==
+
+![img](https://i0.hdslb.com/bfs/note/f35237114f62f04b0e31adc43307768ee5e09b85.png@690w_!web-note.webp)
+
+3.early fusion：最开始就融合
+
+文本和位置编码, patch喂入一个transformer
+
+![img](https://i0.hdslb.com/bfs/note/5e23f48b32c660b0dc311c44f7d9bd39d1e90dfe.png@690w_!web-note.webp)
+
+直接拿CLIP做视频文本的retrieval,效果直接秒杀之前的那些方法
+
+少量数据集：直接mean效果最好（CLIP在4million上训练的，微调反而不好）
+
+![img](https://i0.hdslb.com/bfs/note/29437bad9ab5584a443ab0c558d4d120fdd2fd8a.png@690w_!web-note.webp)
+
+ 
+
+![img](https://i0.hdslb.com/bfs/note/eb6997663872f5e5285385dfa29ab0f164f2e6cd.png@690w_!web-note.webp)
+
+So, 大家都是直接mean
+
+insights:
+
+![img](https://i0.hdslb.com/bfs/note/0b01627a7e11646d172b4bbae6bbad03fb312d98.png@690w_!web-note.webp)
+
+ Gradient search,多试几组学习率。
+
+
+
+### 8、ActionCLIP
+
+
+
+ActionCLIP: 动作识别
+
+动机：
+
+- 动作识别中标签的定义，标记是非常困难的。
+- ==遇到新类，更细粒度的类==
+
+![img](https://i0.hdslb.com/bfs/note/8c23be82e9c0eeae5acaf529db782d4700c51a60.png@690w_!web-note.webp)
+
+==因为这里的文本就是标好的labels，非对角线点也可能是正样本。->交叉熵换成KL散度(两个分布的相似度)==
+
+三阶段：pre-train, prompt, finetune
+
+![img](https://i0.hdslb.com/bfs/note/be61ae79f0eab8ec3e3a03b9927f2d8f4cf4d278.png@690w_!web-note.webp)
+
+
+
+![img](https://i0.hdslb.com/bfs/note/64729aef9c1435af7bae2373390b6a06129ea058.png@690w_!web-note.webp)
+
+
+
+==**shift: 在特征图上做各种各样的移动，达到更强的建模能力。没有增加额外的参数和存储**。==
+
+19年tsm将shift用到了时序
+
+shift window，swin transformer里有用到
+
+![img](https://i0.hdslb.com/bfs/note/f86b1c615e5118bfc0a0686d3d072202fd96cdbc.png@690w_!web-note.webp)
+
+multimodal framework: 把one hot的标签变成language guided的目标函数
+
+都是RGB+分类，使用CLIP预训练好的效果更好
+
+![img](https://i0.hdslb.com/bfs/note/8083145d8f62590077ce13a633e06c859f3c4402.png@690w_!web-note.webp)
+
+因为识别的数据集很大，funetune足够了
+
+![img](https://i0.hdslb.com/bfs/note/c2520edcf2d62ce6f33b89a283a63bae2818fd97.png@690w_!web-note.webp)
+
+zero/Few-shot的能力：
+
+![img](https://i0.hdslb.com/bfs/note/85ebba1d600ac7f5f35e94d5bbfc4adc5361cef3.png@690w_!web-note.webp)
+
+视频还有很多难点
+
+
+
+55:21利于下游任务
+
+
+
+拿CLIP作为visual encoder for diverse 下游vision-language tasks的初始化参数, 再finetune
+
+
+
+56:06clip+语音
+
+
+
+### 9、AudioCLIP
+
+![img](https://i0.hdslb.com/bfs/note/e0cc25b945d5c73b1ef55309480c616158f6e8ea.png@690w_!web-note.webp)
+
+文本，视频（帧），语音成triplet
+
+**三个相似度矩阵，loss**
+
+zero-shot语音分类
+
+
+
+57:303D
+
+### 10、PointCLIP
+
+
+
+数据集很小
+
+只要是RGB图像，CLIP都能处理的很好
+
+![img](https://i0.hdslb.com/bfs/note/d48af73212a28714f4ad3a0b129059eef1a4dfe3.png@690w_!web-note.webp)
+
+prompt: 明确告诉是点云
+
+
+
+
+
+59:21
+
+### 11、DepthCLIP
+
+
+
+把深度估计看成了一个分类问题而不是回归
+
+
+
+![img](https://i0.hdslb.com/bfs/note/dae5655cd2afdbe9ffd16a5629e97e3ed746e8c5.png@690w_!web-note.webp)
+
+类别和[0.5,1,1.5..]对应
+
+
+
+总结：
+
+1.仅用CLIP提取更好的特征，点乘
+
+2.clip做teacher，蒸馏
+
+3.不用预训练的CLIP，仅用多模态对比学习的思想
+
+
+
+### 12、拓展总结
+
+
+
+
+
+回顾CLIP，用对比学习的方式学习一个视觉-语言的多模态模型。
+
+
+1.对比学习预训练，文本和图片分别经过编码器得到特征。对角线上为n个正样本对，其他位置为n2-1负样本对。图片特征与文本特征建立了联系，此时模型从图片学到的特征可能不仅仅是图片本身的特征，还有文本的语义信息。openAI自建大规模的数据集WIT（webimage text）
+
+2.zero-shot推理，prompt template。单词变成句子（预训练时是句子，避免distribution gap），再经过预训练好的文本编码器，得到文本特征。
+
+3.测试图片经过预训练好的图片编码器，得到图片的特征。将图片特征与文本特征进行cos相似度计算，进行匹配。
+
+与图片对应的文本可以看做高级标签，文本与图像建立了联系，文本引导模型从图片中提取文本的语义信息。 
+
+
+
+#### ①Lseg
+
+
+
+![image-20241005221929785](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241005221929785.png)
+
+第一行图中，能够完美的将狗和树分开，为了验证模型的容错能力，加一个汽车vehicle的标签，模型中也并没有出现汽车的轮廓。另一方面，==模型也能区分子类父类，标签中不再给出dog而是给出pet，dog的轮廓同样可以被分割开来==。
+
+第三行图中，椅子、墙壁甚至地板和天花板这种极为相似的目标也被完美的分割开来。
+
+![image-20241005222045802](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241005222045802.png)
+
+
+如上图，与CLIP结构非常像，模型总揽图中**图像和文本**分别经过图像编码器（Image Encoder）和文本编码器（Text Encoder）==得到密集dense的图像文本特征==。此处密集的图像特征需进一步放大（up scaling）得到新的特征的图与原图大小一致，这一步也是为分割任务的实现。然后模型的输出与ground true的监督信号做一个交叉熵损失就可以训练起来了。Image Encoder的结构就是ViT+decoder，其中decoder的作用就是把一个bottleneck feature慢慢upscale上去。
+
+![image-20241005222223938](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241005222223938.png)
+
+这里的Loss不像CLIP使用对比学的loss，而是跟那些Ground True mask做的cross entropy loss，并非一个无监督训练。这篇论文的意义在于将文本的分支加入到传统的有监督分割的pipeline模型中。通过矩阵相乘将文本和图像结合起来了。训练时可以学到language aware（语言文本意识）的视觉特征。从而在最后推理的时候能使用文本的prompt任意的得到分割的效果。
+
+![image-20241005222301886](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241005222301886.png)
+
+
+本文中文本编码器的参数完全使用的CLIP的文本编码器的参数，因为分割任务的数据集都比较小（10-20万），==为保证文本编码器的泛化性，就直接使用并锁住CLIP中文本编码器的参数。图像编码器使用Vit / DEit的预训练权重，使用CLIP的预训练权重效果不太好==。
+
+
+​                       ![image-20241005222310597](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241005222310597.png)                      
+
+Spatial Regularization Blocks这个模块是简单的conv卷积或者DWconv，这一层进一步学习文本图像融合后的特征，理解文本与图像如何交互。后边的消融实验证明，两层Spatial Regularization Blocks效果最好，但是四层Spatial Regularization Blocks突然就崩了。其实Spatial Regularization Blocks这个模块对整个性能没有多大影响，可以先不去考虑。
+
+![image-20241005222355195](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241005222355195.png)
+
+PASCAL数据集上的结果，LSeg在zero-shot 上效果要好不少，但是对于1-shot来说还是差了15个点左右。如果使用大模型（ViT-L）也还是差了6个点左右。
+
+![image-20241005222415291](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241005222415291.png)
+
+<font color=red size=5>本质上再算图像特征和文本特征之间的相似性，并不是真的再做一个分类，就会把dog识别成toy玩具狗</font>。  
+
+ 
+
+#### ② Group Vit
+
+
+
+[Group ViT（Semantic Segmentation Emerges from Text Supervision）CV - 哔哩哔哩 (bilibili.com)](https://www.bilibili.com/read/cv18810713/?spm_id_from=333.999.0.0)
+
+
+
+#### ③ ViLD
+
+
+
+[ViLD（Open-Vocabulary Object Detection via Vision and Language Ko - 哔哩哔哩 (bilibili.com)](https://www.bilibili.com/read/cv18815536/?spm_id_from=333.976.0.0)
+
+
+
+
+
+#### ④ GLIP V1/2
+
+[GLIP_V1/V2（Ground Language-Image Pre-train）CVPR2022 - 哔哩哔哩 (bilibili.com)](https://www.bilibili.com/read/cv18815566/?spm_id_from=333.976.0.0)
+
+
+
+#### ⑤CLIP Passo
+
+[CLIP Passo：Semantically-Aware Object Sketching图像生成抽象的简笔画 - 哔哩哔哩 (bilibili.com)](https://www.bilibili.com/read/cv18854569/?spm_id_from=333.976.0.0)
+
+
+
+#### ⑥CLIP4 clip
+
+
+
+[CLIP4clip：An Empirical Study of CLIP for End to End Video Clip R - 哔哩哔哩 (bilibili.com)](https://www.bilibili.com/read/cv18854602/?spm_id_from=333.976.0.0)
+
+
+
