@@ -252,3 +252,9 @@ github: https://github.com/lucidrains/CoCa-pytorch
 具体而言，它指的是在将任意模态输入网络后，都表现为 list of tokens，直接将它们看做是相同的模态来做 masked modeling 就好了。如果想要拿过去做下游任务的话，直接将需要的那部分模型拿出来即可。比如做视觉任务就拿视觉模型，做语言任务就拿语言模型。如果是做多模态任务，可以灵活地模拟不同的需求，比如：1. 做生成任务可以拿多模态部分的参数出来 2. 做图文检索可以单独取出视觉部分和语言部分来模拟 CLIP。不仅仅是能做任意任务，还继承了前作的优点，比如 CLIP 这种弱跨模态交互带来的计算效率的优势。
 
 ![img](https://i0.hdslb.com/bfs/note/b44d0b350e43cd0460b7327d7a201c66fcef8ee6.png@690w_!web-note.webp)
+
+
+
+
+
+🔗：https://www.bilibili.com/video/BV1fA411Z772/?spm_id_from=333.788&vd_source=81e5007efea018d7c2e8c28374fcdf34
