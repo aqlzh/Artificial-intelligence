@@ -40,7 +40,7 @@ Word patch alignment (这个在vilt中用到，但是计算很慢，pass)
 
 
 
-
+<font color=red size=5>动量蒸馏</font>
 
 **贡献2 -** Momentum distillation, self-training method which learns from pseudo-targets produced by a momentum model
 
@@ -296,7 +296,7 @@ github: https://github.com/lucidrains/CoCa-pytorch
 
 ![image-20241007141539205](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241007141539205.png)
 
-这段文字讨论了多模态学习的发展历程和关键模型的演变，重点分析了不同模型在视觉和文本多模态任务中的作用和改进。以下是详细的总结概括：
+多模态学习的发展历程和关键模型的演变，重点分析了不同模型在视觉和文本多模态任务中的作用和改进。以下是详细的总结概括：
 
 1. **Vision Transformer (ViT) 的引入**
 
@@ -304,7 +304,7 @@ github: https://github.com/lucidrains/CoCa-pytorch
 
 2. **ViLT 和 CLIP 的对比与 ALBEF 的诞生**
 
-ViLT 简化了结构，而 CLIP 模型则通过对比学习方法，在图像和文本检索任务上表现出色。ALBEF 模型则结合了 ViLT 和 CLIP 的优势，通过融合编码器（Fusion Encoder）的模式，在多模态任务中表现优异。ALBEF 的简单性和高效性使其成为多模态研究中的基础模型，带来了许多后续工作。
+ViLT 简化了结构，而 CLIP 模型则通过对比学习方法，在图像和文本检索任务上表现出色。==ALBEF 模型则结合了 ViLT 和 CLIP 的优势，通过融合编码器（Fusion Encoder）的模式==，在多模态任务中表现优异。ALBEF 的简单性和高效性使其成为多模态研究中的基础模型，带来了许多后续工作。
 
 3. **SimVLM、CoCa 和 VLMO 的发展**
 
@@ -325,4 +325,16 @@ MAE 使用了 Masked Data Modeling 的方法，通过掩盖大量的视觉 Patch
 
 总结：
 
-这段讨论展示了多模态学习领域从依赖复杂特征提取到使用简化架构的转变，以及通过融合编码器和 Masked Modeling 等技术的创新提升模型性能的过程。研究的重点逐渐转向统一的、多任务模型，以减少不同任务间的模型结构调整。
+这段讨论展示了多模态学习领域从依赖复杂特征提取到使用简化架构的转变，以及通过融合编码器和 Masked Modeling 等技术的创新提升模型性能的过程。研究的重点逐渐转向统一的、多任务模型，以减少不同任务间的模型结构调整。、
+
+
+
+
+
+---
+
+在之前的CLIP  章节中 VILD 提到了知识蒸馏
+
+在本文中 的ALBEF  是动量蒸馏
+
+----
