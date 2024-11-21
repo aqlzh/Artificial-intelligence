@@ -890,7 +890,7 @@ Mamba 并行扫描广泛应用于需要高效前缀和计算的任务中，如�
 
 现在的严格命令 ：   python3 run.py --task_name long_term_forecast  --is_training 1 --model_id 001 --model CMamba --data ETTh1
 
-
+python3 main.py --task_name long_term_forecast  --is_training 1 --model_id 001 --model CMamba 
 
 ![image-20241104192108717](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241104192108717.png)
 
