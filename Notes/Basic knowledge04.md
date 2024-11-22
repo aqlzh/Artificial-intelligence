@@ -342,6 +342,36 @@ PlainMamba旨在进一步提升等向性Mamba模型的性能，还有EfficientVM
 
 既然注意力机制的类型明确了，**在图像分类这一亩三分地上干掉Mamba的可能性暴增**。但老问题又回来了，怎么确定它是不是长序列任务呢？整篇文章最有点数学理论含量，也是最有看点的就是3.2关于图像处理任务是否属于长序列问题的分析。这部分没点基出则很容易一片汇然，不伯，有
 
+
+
+
+
+![image-20241122202029837](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241122202029837.png)
+
+
+
+#### 5、VIT
+
+通过定理分析
+
+![image-20241122223828191](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241122223828191.png)
+
+#### 6、模型架构
+
+下图展示于MambaOut模型的总体框架以及Gated CNN块的具体结构。整体框架类似ResNet,通过降采样逐步减少特征图的尺寸，同时增加特征的抽象层次。
+
+
+
+
+
+MambaOut 的架构与Swin Transformer和 **DenseNet在分层结构和降采样方面有相似之处**，==但在特征提取和信息混合机制上有所不同==。MambaOut使用**Gated CNN块**，而**Swin Transformer使用窗口注意力机制的Transformer块**，DenseNet.则使用密集连接的卷积层。这些差异决定了它们在处理不同任务时的特性和优势。
+
+
+
+
+
+> 结论：如果说Mamba是回归RNN+新型注意力机制，那MambaOut其实是回归CNN+新型注意力机制。
+
 ## 四、RWKV
 
 
