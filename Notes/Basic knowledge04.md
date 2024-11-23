@@ -372,6 +372,23 @@ MambaOut 的架构与Swin Transformer和 **DenseNet在分层结构和降采样�
 
 > 结论：如果说Mamba是回归RNN+新型注意力机制，那MambaOut其实是回归CNN+新型注意力机制。
 
+
+
+- 1、SSM有没有对图像分类意义不大，==因为时序关系不重要==。
+- 2、不如最新的CAFormer-M36使用简单的可分离卷积和原始注意力机制，比所有同等大小的视觉Mamba模型高出超过%的准确率85.2%。大家才是纯种的CNN transformer
+
+#### 7、目标检测与实例分割
+
+
+
+- 使用标准的COCO数据集，MambaOut作为Mask R-CNN的主干网络使用，结果：尽管MambaOut在COCO上的目标检测和实例分割任务中可以超越一些视觉Mamba模型，但它仍然落后于最先进的视觉Mamba模型，例如VMamba和LocalVMamb
+
+  
+
+- 这种性能差距强调了在==长序列视觉任务中整合Mamba的好处==。当然，与最先进的卷积-注意力混合模型TransNeXt相比51.7%%，视觉Mamba仍表现出显著的性能差距49.2%。仍然需要努力！这个合理也不合理，两点：
+  1.Transformer优化了多少年了，Mamba才多久
+  2.即使是实例分割问题，所谓的长序列建模，但序列长度并没有NLP那么长，因此效果有限正常。
+
 ## 四、RWKV
 
 
