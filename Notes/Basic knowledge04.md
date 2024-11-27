@@ -240,7 +240,7 @@ Mamba  的构成
 
 ## 三、Mamba out
 
-
+>   https://arxiv.org/pdf/2405.07992   
 
 整个摘要的重点，也就是结论性的东西作者其实用斜体给你标出来了：
 1、long-sequence and auto regressive 这方面Mamba依然擅长，承认优点.
@@ -389,6 +389,18 @@ MambaOut 的架构与Swin Transformer和 **DenseNet在分层结构和降采样�
   1.Transformer优化了多少年了，Mamba才多久
   2.即使是实例分割问题，所谓的长序列建模，但序列长度并没有NLP那么长，因此效果有限正常。
 
+
+
+####  8、总结
+
+本文主要的贡献在于：
+1.定量分析论证了<font color=red>图像分类任务不是长序列建模问题</font>，<font color=blue>而目标检测和实例分割是</font>。前者不需要RNN这种机制，因此MambaOut,后者OUT不了
+
+2.借鉴Mamba的GatedCNN结构微调了ResNet,实现了一种新型全局可见注意力机制下的改进版模型。
+
+总体而言，这是一篇证伪的文章，名字起的不错，但创新点并非顾名思义。建议大家综合Mamba来看待，成系列学习。多从中学习人家入手的角度，看问题的深度，创新的刁钻度。
+
+
 ## 四、RWKV
 
 
@@ -482,5 +494,497 @@ RWKV是一种创新的序列建模架构，结合了Transformer和RNN的优势�
 
 ![image-20241121224827942](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241121224827942.png)
 
+## 五、VGG
+
+VGG 是一种用于**图像分类和特征提取**的卷积神经网络（CNN）架构，全名是 **Visual Geometry Group
+
+**VGG 的特点**
 
 
+
+​	1.	**深层结构：**
+
+​	•	VGG 网络由多个==卷积层==和池化层堆叠而成，层数深（如 VGG16 有 16 层，VGG19 有 19 层）。
+
+​	•	卷积核统一采用 3x3，步长为 1；池化层采用2x2 。
+
+​	•	深度的增加使得网络能够捕获更复杂的特征。
+
+​	2.	**简单而统一的设计：**
+
+​	•	每个卷积层的配置保持一致，没有复杂的改进。
+
+​	•	激活函数采用 ReLU。
+
+​	•	使用多层全连接（Fully Connected，FC）作为分类器。
+
+​	3.	**大规模训练：**
+
+   	•	VGG 在 ImageNet 数据集（超过 1000 万张图片，1000 个类别）上训练，性                                                                                                                                                                                                       能优秀。
+
+
+
+**VGG 的主要版本**
+
+
+
+​	1.	**VGG-16：**
+
+​	•	包括 13 个卷积层和 3 个全连接层，总共 16 层。
+
+​	2.	**VGG-19：**
+
+​	•	包括 16 个卷积层和 3 个全连接层，总共 19 层。
+
+
+
+**VGG 的优点**
+
+
+
+​	•	**高准确率：** 在大型图像分类任务中表现出色。
+
+​	•	**结构简单：** 模块化设计便于理解和实现。
+
+
+
+**VGG 的缺点**
+
+
+
+​	1.	**计算量大：**
+
+​	•	由于层数深且参数多，VGG 对内存和计算能力要求高。
+
+​	2.	**训练时间长：**
+
+​	•	需要大量数据和强大的硬件支持。
+
+​	3.	**参数冗余：**
+
+​	•	权重参数较多，不适合资源受限的环境。
+
+
+
+**VGG 的应用**
+
+
+
+​	•	**图像分类：** 用于识别图片中的类别。
+
+​	•	**特征提取：** 常用 VGG 的卷积层作为特征提取器，将输出传给其他任务（如目标检测、分割）。
+
+
+
+在实际应用中，VGG 虽然被更高效的网络（如 ResNet 和 EfficientNet）取代，但由于其结构简单，仍然是研究深度学习的重要起点之一。
+
+
+
+## 六、梗哥的 Resnet  TRM BERT
+
+
+
+端到端： 直接从问题的输入到输出，省去中间的过程（没有预处理  和特征工程）
+
+
+
+- 那么是不是越多层，就是越好呢   --->   并不是 有梯度消失  和梯度爆炸问题 
+
+
+
+![image-20241123114335651](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241123114335651.png)
+
+![image-20241123144230624](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241123144230624.png)
+
+RNN  的解剖图
+
+
+
+![image-20241123164937580](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241123164937580.png)
+
+问题在于不能解决并行   ，不能解决long term  问题 
+
+
+
+多头注意力机制  用来模拟  CNN  的多通道效果
+
+
+
+就是空间换时序的思路
+
+
+
+掩码结合 将输入嵌入 偏移一个位置 ，确保对预测位置 只能依赖 小于 i 的已知输入
+
+
+
+> 查询矩阵 Q （哪些词与自己有关） 键矩阵 K（回答查询）   值矩阵V(修正词向量)
+
+![image-20241123172322001](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241123172322001.png)
+
+因为attention   没有时序信息所以要进行位置编码
+
+![image-20241123172614525](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241123172614525.png)
+
+
+
+
+
+**B**idirectional **E**ncoder **R**epresentations from **T**ransformers
+
+both left and right context, pretrain, fine-tune,  one additional output layer
+
+
+
+Bert  只使用了 encoder
+
+GPT  只是用了  decoder
+
+
+
+feature-based: ELMo
+
+fine-tuning: GPT
+
+
+
+
+
+limitation: unidirectional, sub-optimal for sentence-level tasks
+
+MLM: masked language model
+
+next sentence prediction  (NSP)
+
+
+
+BERT的贡献：
+
+- 双向的重要性
+- 预训练替代了复杂的模型结构射击
+- 11个NLP任务的SOTA
+
+
+
+## 七、EM  算法
+
+- 常见的隐变量估计算法
+
+​       EM 算法 (Expectation-Maximization Algorithm)
+
+EM 算法是一种用于**含有隐变量或不完全数据的概率模型参数估计**的迭代优化算法。它通过交替执行 **期望步骤 (E-step)** 和 **最大化步骤 (M-step)**，估计模型参数，直到收敛。
+
+==似然 --->  可能性==
+
+核心思想
+
+<font color=red>在含隐变量或不完全数据的问题中，直接使用最大似然估计可能会遇到困难</font>。EM 算法通过以下两步解决：
+
+1. **E 步骤（Expectation, 期望）：**
+   - 计算当前参数下隐变量的**条件期望**。
+
+2. **M 步骤（Maximization, 最大化）：**
+   - 利用条件期望重新估计模型参数，最大化对数似然函数。              
+
+两步交替进行，直到参数收敛。
+
+
+
+数学描述
+
+设：
+- 观测数据： \(X\)
+- 隐变量： \(Z\)
+- 模型参数： $\theta$
+- 完整数据的对数似然： $\ln p(X, Z | \theta)$
+
+目标是最大化观测数据的对数似然：
+$\ln p(X | \theta) = \ln \int p(X, Z | \theta) dZ$
+
+直接求解困难，EM 算法采用以下步骤：
+
+
+
+
+
+1. E-step (计算期望)
+
+计算 Q 函数，即完整数据对数似然的条件期望：
+
+$Q(\theta | \theta^{(t)}) = \mathbb{E}_{Z | X, \theta^{(t)}} [\ln p(X, Z | \theta)]$
+
+其中，$\theta^{(t)}$​ 是当前参数估计。
+
+
+
+
+
+2. M-step (最大化期望)
+
+最大化 Q 函数，更新参数：
+
+$\theta^{(t+1)} = \arg\max_{\theta} Q(\theta | \theta^{(t)})$
+
+
+
+应用场景
+
+1. **混合高斯模型 (GMM)：**
+   用于聚类任务，估计混合高斯分布的参数（均值、方差和混合系数）。
+2. **隐马尔可夫模型 (HMM)：**
+   用于语音识别、时间序列分析。
+3. **图像处理：**
+   图像分割或去噪中，用 EM 算法估计像素分类概率。
+4. **缺失数据问题：**
+   数据缺失时，用 EM 补充缺失值。
+
+
+
+优点
+
+- 能有效处理含隐变量的问题。
+- 理论上保证每次迭代后对数似然值不降低。
+
+
+
+缺点
+
+1. **局部最优：** 初值敏感，容易陷入局部最优解。
+2. **计算复杂度高：** 随隐变量复杂度增加，计算成本较高。
+3. **收敛速度慢：** 需要较多迭代。
+
+
+
+案例：高斯混合模型 (GMM) 聚类
+
+1. **模型：** 假设数据由 \(K\) 个高斯分布生成：
+   
+   $p(X | \theta) = \sum_{k=1}^{K} \pi_k \mathcal{N}(x | \mu_k, \Sigma_k)$
+   
+   其中 \(\pi_k\) 是混合权重，\(\mu_k\)、\(\Sigma_k\) 是第 \(k\) 个高斯分布的均值和协方差。
+
+2. **EM 步骤：**
+   
+   - **E-step：** 计算每个数据点属于第 \(k\) 个高斯分布的概率（后验概率）。
+   - **M-step：** 根据后验概率更新参数 \(\pi_k\)、\(\mu_k\)、\(\Sigma_k\)。
+   
+3. **迭代：** 直到参数收敛。
+
+---
+
+EM 算法通过**观测数据**推断**隐变量**，再利用隐变量更新模型参数，是一种经典且强大的概率优化方法。
+
+
+
+### 梗哥说法
+
+![image-20241125104306989](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241125104306989.png)
+
+从观测结果y出发 ,求分布函数参数为 $\sigma$ 的可能性
+
+
+
+以最大概率 生成观测数据
+
+
+
+![image-20241125192446171](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241125192446171.png)
+
+
+
+
+
+### 清华哥说法
+
+
+
+<font color=red>具有隐变量的混合模型的参数估计</font>   极大似然问题
+
+
+
+![image-20241125212454090](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241125212454090.png)
+
+这个公式描述的是**期望最大化算法（Expectation-Maximization, EM）**中的M步更新公式。它是一种迭代优化算法，常用于包含隐变量的概率模型参数估计。以下是详细的公式解释：
+
+公式结构：
+
+1. **优化目标：**
+   
+   $\theta^{t+1} = \arg\max_{\theta} \int_{z} \log p(x, z | \theta) p(z | x, \theta^t) dz$
+   
+   
+   - **含义：** 在每次迭代中，找到新的参数 \(\theta^{t+1}\)，使得某种目标函数（联合对数似然的期望）最大化。
+   - **\(\theta\)：** 模型的参数。
+   - **\(x\)：** 观测数据（已知）。
+   - **\(z\)：** 隐变量（未知或需要估计）。
+   - **$p(x, z | \theta)$：** 联合分布，对应模型假设。
+   - **$p(z | x, \theta^t)$：** 在当前参数 \(\theta^t\) 下，隐变量的后验分布。
+   
+2. **分解部分：**
+   
+   - 第一部分：
+     
+     $\int_{z} \log p(x, z | \theta) p(z | x, \theta^t) dz$
+     
+     这是对联合对数似然 $\log p(x, z | \theta)$ 在当前后验分布 $p(z | x, \theta^t)$ 下的期望。
+   - 第二部分：
+     
+     $\mathbb{E}_{z | x, \theta^t} [\log p(x, z | \theta)$
+     这一部分是第一部分的简化表达式，表示对 $\log p(x, z | \theta)$ 的期望。
+
+### 背后逻辑：
+EM算法的目标是最大化观测数据的对数似然 \(\log p(x | \theta)\)。由于直接优化 \(\log p(x | \theta)\) 很难（尤其是当隐变量存在时），EM引入了间接的优化方式：
+1. **E步（Expectation Step，期望步骤）：**
+   - 计算隐变量的后验分布 \(p(z | x, \theta^t)\)。
+   - 根据后验分布，计算联合对数似然的期望：
+     \[
+     Q(\theta | \theta^t) = \mathbb{E}_{z | x, \theta^t} [\log p(x, z | \theta)]
+     \]
+
+2. **M步（Maximization Step，最大化步骤）：**
+   - 更新参数：
+     \[
+     \theta^{t+1} = \arg\max_{\theta} Q(\theta | \theta^t)
+     \]
+   - 即通过最大化 \(Q\) 函数找到最优的参数。
+
+### 总结：
+公式本质上描述了EM算法中的M步，其核心思想是利用当前隐变量的分布（E步的结果），对联合对数似然进行最大化更新参数。
+
+这种方法被广泛用于：
+- 混合模型（如高斯混合模型，GMM）
+- 隐马尔可夫模型（HMM）
+- 潜变量模型（如LDA主题模型）等。
+
+## 八、指数族分布 (Exponential Family Distribution)
+
+
+
+**指数族分布**是一类==常用的概率分布==，其<font color=red>概率密度函数或概率质量函数可以统一写成一种通用的数学形式</font>。这类分布广泛应用于统计建模、机器学习中，特别是在广义线性模型 (GLM) 中具有重要意义。
+
+
+
+定义
+
+一个分布属于指数族，如果它的概率密度函数 (PDF) 或概率质量函数 (PMF) 可以表示为以下形式：
+
+
+$p(x | \eta) = h(x) \exp\left( \eta^T T(x) - A(\eta) \right)$
+
+其中：
+- \(x\)：观测数据（随机变量）
+- \(\eta\)：**自然参数** (Natural Parameter)
+- \(T(x)\)：充分统计量 (Sufficient Statistic)
+- \(A(\eta)\)：**对数规范化函数** (Log Partition Function)，保证分布积分为1
+- \(h(x)\)：基函数 (Base Measure)
+
+
+
+应用场景
+
+1. **机器学习：**
+   - 用于分类、回归等任务中建模分布，如逻辑回归和朴素贝叶斯。
+   
+2. **统计建模：**
+   - 指数族分布的通用形式简化了参数估计问题，特别是在最大似然估计中。
+
+3. **信息理论：**
+   - 用于熵、KL散度等计算的基础分布。
+
+---
+
+分布曲线
+
+
+
+![image-20241125193950721](/Users/zhihongli/Documents/Course/MachineLearningNotes-master/pic/image-20241125193950721.png)
+
+EM算法的不足
+1.缺失数据较多时，收敛速度慢
+2.某些特殊的模型，M步对似然函数估计较困难
+3.某些情况下，获得E步期望显示较困难
+
+
+
+
+
+
+
+## 九、变分推断
+
+**变分推断（Variational Inference, VI）** 是一种 **近似推断** 方法，用于在概率模型中估计复杂后验分布。它通过将推断问题转化为优化问题，用优化技术高效地逼近后验分布。
+
+
+
+**1. 背景与动机**
+
+在贝叶斯推断中，我们的目标是计算后验分布：
+$
+P(Z | X) = \frac{P(X, Z)}{P(X)},
+$
+其中：
+
+- \( P(X, Z) \) 是联合分布。
+- \( P(X) \) 是边际似然，通过积分计算：
+  $
+  P(X) = \int P(X, Z) dZ.
+  $
+
+对于复杂的模型，直接计算 \( P(Z | X) \) 或 \( P(X) \) 通常是不可行的，因为积分高维度或无法解析求解。
+
+**2. 核心思想**
+
+变分推断通过引入一个简单的分布 \( Q(Z) \)，用它来近似后验分布 \( P(Z | X) \)。然后通过优化 \( Q(Z) \) 的参数，使 \( Q(Z) \) 与 \( P(Z | X) \) 尽可能接近。
+
+**（1）目标：最小化 KL 散度**
+
+变分推断的目标是最小化 \( Q(Z) \) 与 \( P(Z | X) \) 之间的 KL 散度：
+$
+D_{\text{KL}}(Q(Z) \| P(Z | X)) = \int Q(Z) \log \frac{Q(Z)}{P(Z | X)} dZ.
+$
+
+**（2）等价目标：最大化证据下界（ELBO）**
+
+由于后验 \( P(Z | X) \) 中包含 \( P(X) \)，KL 散度无法直接计算。通过变换目标，我们得到 **证据下界（Evidence Lower Bound, ELBO）**：
+$
+\text{ELBO}(Q) = \mathbb{E}_{Q(Z)} [\log P(X, Z)] - \mathbb{E}_{Q(Z)} [\log Q(Z)].
+$
+
+优化目标转化为最大化 ELBO，因为：
+$
+\log P(X) = \text{ELBO}(Q) + D_{\text{KL}}(Q(Z) \| P(Z | X)),
+$
+其中：
+
+- \( \log P(X) \) 是观测数据的对数边际似然。
+- $ D_{\text{KL}}(Q(Z) \| P(Z | X)) \geq 0 $)。
+
+---
+
+###  
+| **特性**     | **变分推断**             | **MCMC（贝叶斯采样）** |
+| ------------ | ------------------------ | ---------------------- |
+| **计算方式** | 将推断问题转化为优化问题 | 基于随机采样           |
+| **效率**     | 高效，适合大规模数据     | 计算代价高，慢         |
+| **结果形式** | 给出后验的近似分布       | 给出后验分布的采样点   |
+| **适用场景** | 高维、大规模数据模型     | 小规模、高精度推断需求 |
+
+ **5. 变分推断的应用**
+
+变分推断在许多领域得到了广泛应用，包括：
+
+1. **深度学习：**
+   - 变分自动编码器（VAE）：一种生成模型，使用变分推断优化隐变量分布。
+   
+2. **自然语言处理：**
+   - 潜在狄利克雷分布（LDA）模型中的主题推断。
+
+3. **生物信息学：**
+   - 基因表达数据中的隐变量建模。
+
+4. **时间序列分析：**
+   - 隐马尔可夫模型（HMM）的参数估计。
+
+---
+
+ 
